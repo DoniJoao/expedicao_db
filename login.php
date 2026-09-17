@@ -26,18 +26,13 @@ try {
     $pdo = new PDO("mysql:host=" . $host . ";dbname=" . $db_name, $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Nota: Para facilitar os testes iniciais, estamos comparando a senha em texto puro.
-    // Futuramente, é recomendado usar password_hash() no cadastro e password_verify() aqui.
-    // Busca apenas pelo e-mail
     $sql = "SELECT id, nome, email, senha, funcao FROM usuarios WHERE email = :email";
     $stmt = $pdo->prepare($sql);
     $stmt->execute([':email' => $data['email']]);
 
     $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // Usa password_verify para comparar a senha digitada com o hash do banco
     if ($usuario && password_verify($data['senha'], $usuario['senha'])) {
-        // Remove a senha do array antes de devolver para o Flutter
         unset($usuario['senha']); 
         
         echo json_encode([
