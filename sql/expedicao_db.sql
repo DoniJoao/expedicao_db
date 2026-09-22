@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Tempo de geração: 21/09/2026 às 20:48
+-- Tempo de geração: 22/09/2026 às 20:48
 -- Versão do servidor: 8.4.7
 -- Versão do PHP: 8.3.28
 
@@ -31,14 +31,24 @@ DROP TABLE IF EXISTS `coletas`;
 CREATE TABLE IF NOT EXISTS `coletas` (
   `id` int NOT NULL AUTO_INCREMENT,
   `pedido_id` int NOT NULL,
+  `tipo` enum('coleta','entrega') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'coleta',
   `nome` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `documento` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `placa_veiculo` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `placa_veiculo` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `motorista_id` int DEFAULT NULL,
   `assinatura` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `fk_coletas_pedidos` (`pedido_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  KEY `fk_coletas_pedidos` (`pedido_id`),
+  KEY `fk_coletas_motorista` (`motorista_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Despejando dados para a tabela `coletas`
+--
+
+INSERT INTO `coletas` (`id`, `pedido_id`, `tipo`, `nome`, `documento`, `placa_veiculo`, `motorista_id`, `assinatura`, `created_at`) VALUES
+(1, 1, 'coleta', 'Carlos Silva', '12345678900', 'ABC1D23', NULL, 'data:image/png;base64,iVBORw0KGgoAAAANS...', '2026-09-22 20:42:06');
 
 -- --------------------------------------------------------
 
@@ -94,8 +104,8 @@ CREATE TABLE IF NOT EXISTS `itens_pedido` (
 --
 
 INSERT INTO `itens_pedido` (`id`, `pedido_id`, `codigo_produto`, `lote`, `qtd_solicitada`, `qtd_conferida`) VALUES
-(1, 1, 'VNT-40', 'LOTE-26D133', 3, 0),
-(2, 1, 'AQ-200', 'LOTE-25D3851', 1, 0),
+(1, 1, 'VNT-40', 'LOTE-26D133', 3, 3),
+(2, 1, 'AQ-200', 'LOTE-25D3851', 1, 1),
 (3, 2, 'VNT-40', 'LOTE-26D133', 5, 0),
 (4, 3, 'EX-300', 'LOTE-26E001', 4, 0),
 (5, 4, 'VNT-40', 'LOTE-26D133', 12, 0),
@@ -126,7 +136,7 @@ CREATE TABLE IF NOT EXISTS `pedidos` (
 --
 
 INSERT INTO `pedidos` (`id`, `cliente`, `transportadora_id`, `separado`, `volumes_finais`, `data_criacao`, `coletado`) VALUES
-(1, 'Indústria de Alimentos Jampac', 1, 0, 0, '2026-09-21 15:01:50', 0),
+(1, 'Indústria de Alimentos Jampac', 1, 1, 2, '2026-09-21 15:01:50', 1),
 (2, 'Metalúrgica Silva', 2, 0, 0, '2026-09-21 15:01:50', 0),
 (3, 'Distribuidora Central', 3, 0, 0, '2026-09-21 15:01:50', 0),
 (4, 'Móveis Planejados Oliveira', 1, 0, 0, '2026-09-21 15:01:50', 0),
@@ -220,6 +230,7 @@ INSERT INTO `usuarios` (`id`, `nome`, `email`, `senha`, `funcao`) VALUES
 -- Restrições para tabelas `coletas`
 --
 ALTER TABLE `coletas`
+  ADD CONSTRAINT `fk_coletas_motorista` FOREIGN KEY (`motorista_id`) REFERENCES `usuarios` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `fk_coletas_pedidos` FOREIGN KEY (`pedido_id`) REFERENCES `pedidos` (`id`) ON DELETE CASCADE;
 
 --
