@@ -18,14 +18,14 @@ try {
     $pdo = new PDO("mysql:host=$host;dbname=$db_name;charset=utf8mb4", $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    $sql = "SELECT
+        $sql = "SELECT
                 c.id              AS coleta_id,
                 c.pedido_id,
                 c.tipo,
                 c.nome,
                 c.documento,
                 c.placa_veiculo,
-                c.assinatura,
+                LENGTH(c.assinatura) AS assinatura_tamanho,
                 c.created_at,
                 p.cliente,
                 p.volumes_finais,
@@ -52,7 +52,7 @@ try {
             "nome"           => $row['nome'],
             "documento"      => $row['documento'],
             "placa_veiculo"  => $row['placa_veiculo'],
-            "assinatura"     => $row['assinatura'],
+            "assinatura_tamanho" => (int)($row['assinatura_tamanho'] ?? 0),
             "created_at"     => $row['created_at']
         ];
     }echo json_encode($coletas);
