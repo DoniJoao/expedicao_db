@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Tempo de geração: 22/09/2026 às 20:48
+-- Tempo de geração: 25/09/2026 às 19:42
 -- Versão do servidor: 8.4.7
 -- Versão do PHP: 8.3.28
 
@@ -41,14 +41,7 @@ CREATE TABLE IF NOT EXISTS `coletas` (
   PRIMARY KEY (`id`),
   KEY `fk_coletas_pedidos` (`pedido_id`),
   KEY `fk_coletas_motorista` (`motorista_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Despejando dados para a tabela `coletas`
---
-
-INSERT INTO `coletas` (`id`, `pedido_id`, `tipo`, `nome`, `documento`, `placa_veiculo`, `motorista_id`, `assinatura`, `created_at`) VALUES
-(1, 1, 'coleta', 'Carlos Silva', '12345678900', 'ABC1D23', NULL, 'data:image/png;base64,iVBORw0KGgoAAAANS...', '2026-09-22 20:42:06');
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -104,13 +97,13 @@ CREATE TABLE IF NOT EXISTS `itens_pedido` (
 --
 
 INSERT INTO `itens_pedido` (`id`, `pedido_id`, `codigo_produto`, `lote`, `qtd_solicitada`, `qtd_conferida`) VALUES
-(1, 1, 'VNT-40', 'LOTE-26D133', 3, 3),
-(2, 1, 'AQ-200', 'LOTE-25D3851', 1, 1),
+(1, 1, 'VNT-40', 'LOTE-26D133', 3, 0),
+(2, 1, 'AQ-200', 'LOTE-25D3851', 1, 0),
 (3, 2, 'VNT-40', 'LOTE-26D133', 5, 0),
 (4, 3, 'EX-300', 'LOTE-26E001', 4, 0),
 (5, 4, 'VNT-40', 'LOTE-26D133', 12, 0),
 (6, 5, 'VNT-40', 'LOTE-26D133', 30, 0),
-(7, 6, 'AQ-200', 'LOTE-25D3851', 1, 0);
+(7, 6, 'AQ-200', 'LOTE-25D3851', 1, 1);
 
 -- --------------------------------------------------------
 
@@ -125,6 +118,10 @@ CREATE TABLE IF NOT EXISTS `pedidos` (
   `transportadora_id` int DEFAULT NULL,
   `separado` tinyint(1) DEFAULT '0',
   `volumes_finais` int DEFAULT '0',
+  `numero_nf` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `serie_nf` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `chave_nf` varchar(44) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `emitida_em` datetime DEFAULT NULL,
   `data_criacao` datetime DEFAULT CURRENT_TIMESTAMP,
   `coletado` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
@@ -135,13 +132,13 @@ CREATE TABLE IF NOT EXISTS `pedidos` (
 -- Despejando dados para a tabela `pedidos`
 --
 
-INSERT INTO `pedidos` (`id`, `cliente`, `transportadora_id`, `separado`, `volumes_finais`, `data_criacao`, `coletado`) VALUES
-(1, 'Indústria de Alimentos Jampac', 1, 1, 2, '2026-09-21 15:01:50', 1),
-(2, 'Metalúrgica Silva', 2, 0, 0, '2026-09-21 15:01:50', 0),
-(3, 'Distribuidora Central', 3, 0, 0, '2026-09-21 15:01:50', 0),
-(4, 'Móveis Planejados Oliveira', 1, 0, 0, '2026-09-21 15:01:50', 0),
-(5, 'Papelaria Estrela', 2, 0, 0, '2026-09-21 15:01:50', 0),
-(6, 'Comércio de Bebidas Norte', 3, 1, 2, '2026-09-21 15:01:50', 0);
+INSERT INTO `pedidos` (`id`, `cliente`, `transportadora_id`, `separado`, `volumes_finais`, `numero_nf`, `serie_nf`, `chave_nf`, `emitida_em`, `data_criacao`, `coletado`) VALUES
+(1, 'Indústria de Alimentos Jampac', 1, 0, 0, NULL, NULL, NULL, NULL, '2026-09-25 16:31:44', 0),
+(2, 'Metalúrgica Silva', 2, 0, 0, NULL, NULL, NULL, NULL, '2026-09-25 16:31:44', 0),
+(3, 'Distribuidora Central', 3, 0, 0, NULL, NULL, NULL, NULL, '2026-09-25 16:31:44', 0),
+(4, 'Móveis Planejados Oliveira', 1, 0, 0, NULL, NULL, NULL, NULL, '2026-09-25 16:31:44', 0),
+(5, 'Papelaria Estrela', 2, 0, 0, NULL, NULL, NULL, NULL, '2026-09-25 16:31:44', 0),
+(6, 'Comércio de Bebidas Norte', 3, 1, 2, NULL, NULL, NULL, NULL, '2026-09-25 16:31:44', 0);
 
 -- --------------------------------------------------------
 
@@ -191,9 +188,9 @@ CREATE TABLE IF NOT EXISTS `transportadoras` (
 --
 
 INSERT INTO `transportadoras` (`id`, `nome`, `cnpj`, `endereco`, `ativo`, `created_at`) VALUES
-(1, 'Transportadora Padrão', NULL, NULL, 1, '2026-09-21 18:01:50'),
-(2, 'Log Express', '12.345.678/0001-90', 'Av. das Rotas, 100 - São Paulo/SP', 1, '2026-09-21 18:01:50'),
-(3, 'Rápido Sul', '98.765.432/0001-10', 'Rua do Frete, 500 - Curitiba/PR', 1, '2026-09-21 18:01:50');
+(1, 'Transportadora Padrão', NULL, NULL, 1, '2026-09-25 19:31:44'),
+(2, 'Log Express', '12.345.678/0001-90', 'Av. das Rotas, 100 - São Paulo/SP', 1, '2026-09-25 19:31:44'),
+(3, 'Rápido Sul', '98.765.432/0001-10', 'Rua do Frete, 500 - Curitiba/PR', 1, '2026-09-25 19:31:44');
 
 -- --------------------------------------------------------
 

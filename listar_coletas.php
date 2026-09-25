@@ -9,17 +9,51 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit;
 }
 
+// -------- Parâmetros opcionais --------
+$limite = isset($_GET['limite']) ? max(1, min(500, intval($_GET['limite']))) : 500;
+$offset = isset($_GET['offset']) ? max(0, intval($_GET['offset'])) : 0;
+$busca  = isset($_GET['busca'])  ? trim($_GET['busca']) : '';
+
+// Se busca vier preenchida, filtra por id ou cliente
+$filtroBusca = '';
+$params = [];
+
+if ($busca !== '') {
+    if (ctype_digit($busca)) {
+        // Busca numérica: casa com id OU parte do nome do cliente
+        $filtroBusca = " AND (p.id = :busca_id OR p.cliente LIKE :busca_nome)";
+        $params[':busca_id'] = intval($busca);
+        $params[':busca_nome'] = '%' . $busca . '%';
+    } else {
+        // Busca textual: só por cliente
+        $filtroBusca = " AND p.cliente LIKE :busca_nome";
+        $params[':busca_nome'] = '%' . $busca . '%';
+    }
+}
+
 $host = "localhost";
 $db_name = "expedicao_db";
 $username = "root";
 $password = "";
 
+$limite = isset($_GET['limite']) ? max(1, min(500, intval($_GET['limite']))) : 500;
+$offset = isset($_GET['offset']) ? max(0, intval($_GET['offset'])) : 0;
+
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$db_name;charset=utf8mb4", $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Pedidos separados (separado=1) e ainda não coletados (coletado=0)
-    $sql = "SELECT 
+    // -------- Conta o total (pra paginação saber se tem mais) --------
+    $sqlCount = "SELECT COUNT(DISTINCT p.id) AS total
+                 FROM pedidos p
+                 WHERE p.separado = 1 AND p.coletado = 0
+                 $filtroBusca";
+    $stmtCount = $pdo->prepare($sqlCount);
+    $stmtCount->execute($params);
+    $total = (int)$stmtCount->fetch(PDO::FETCH_ASSOC)['total'];
+
+    // -------- Busca os pedidos paginados --------
+    $sql = "SELECT
                 p.id AS pedido_id,
                 p.cliente,
                 p.data_criacao,
@@ -35,15 +69,16 @@ try {
             LEFT JOIN transportadoras t ON p.transportadora_id = t.id
             LEFT JOIN itens_pedido i ON p.id = i.pedido_id
             LEFT JOIN produtos pr ON i.codigo_produto = pr.codigo
-            WHERE p.separado = 1 AND p.coletado = 0
-            ORDER BY p.id";
+            WHERE p.separado = 0 AND p.coletado = 0
+            $filtroBusca
+            ORDER BY p.id
+            LIMIT $limite OFFSET $offset";
 
     $stmt = $pdo->prepare($sql);
-    $stmt->execute();
+    $stmt->execute($params);
     $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     $pedidos = [];
-
     foreach ($resultados as $row) {
         $id = $row['pedido_id'];
 
@@ -69,6 +104,13 @@ try {
             ];
         }
     }
+
+    // -------- Metadados de paginação --------
+    // Mantém compatibilidade: a resposta continua sendo um array puro.
+    // Os metadados vão em headers, não no corpo.
+    header('X-Total-Count: ' . $total);
+    header('X-Page-Limit: ' . $limite);
+    header('X-Page-Offset: ' . $offset);
 
     echo json_encode(array_values($pedidos));
 
