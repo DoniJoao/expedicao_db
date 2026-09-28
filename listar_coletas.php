@@ -69,7 +69,7 @@ try {
             LEFT JOIN transportadoras t ON p.transportadora_id = t.id
             LEFT JOIN itens_pedido i ON p.id = i.pedido_id
             LEFT JOIN produtos pr ON i.codigo_produto = pr.codigo
-            WHERE p.separado = 0 AND p.coletado = 0
+            WHERE p.separado = 1 AND p.coletado = 0
             $filtroBusca
             ORDER BY p.id
             LIMIT $limite OFFSET $offset";
